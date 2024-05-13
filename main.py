@@ -24,8 +24,8 @@ def get_sunset_and_sunrise_time_utc(lat:float, long:float) -> (int, int):
     response.raise_for_status()
     data = response.json()
     sunset_time = data["results"]["sunset"].split("T")[1].split("+")[0].split(":")
-    sunrise_time = data["results"]["sunset"].split("T")[1].split("+")[0].split(":")
-    return int(sunset_time[0]), int(sunset_time[1]), int(sunrise_time[0], sunrise_time[1])
+    sunrise_time = data["results"]["sunrise"].split("T")[1].split("+")[0].split(":")
+    return int(sunset_time[0]), int(sunset_time[1]), int(sunrise_time[0]), int(sunrise_time[1])
 
 
 def get_current_time_utc() -> (int, int):
@@ -115,6 +115,9 @@ def main() -> None:
             ((current_hour == sunrise_hour) and current_minute < sunrise_minute) or current_hour < sunrise_minute) and
             (is_iss_near(lat, long))):
         send_email(from_name, from_email, from_pass)
+        print("email sent")
+    else:
+        print("criteria was not matched")
 
 
 if __name__ == "__main__":
