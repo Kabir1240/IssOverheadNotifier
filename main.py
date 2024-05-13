@@ -40,26 +40,6 @@ def get_current_time_utc() -> (int, int):
     return hour, minute
 
 
-def is_iss_near(lat:float, long:float) -> bool:
-    """
-    checks if the iss is near your location
-    :param lat: latitude
-    :param long: longitude
-    :return: True if the ISS is near, false otherwise
-    """
-
-    response = requests.get("http://api.open-notify.org/iss-now.json")
-    response.raise_for_status()
-    data = response.json()
-    iss_lat = float(data["iss_position"]["latitude"])
-    iss_long = float(data["iss_position"]["longitude"])
-
-    if (lat - 5 <= iss_lat <= lat + 5) and (long - 5 <= iss_long <= long + 5):
-        return True
-    else:
-        return False
-
-
 def get_user_data() -> (str, str, str, float, float):
     """
     returns the name, email, password, lat and long from the user account
@@ -96,6 +76,42 @@ def send_email(from_name:str, from_email:str, from_pass:str) -> None:
     messagebox.showinfo(title="Confirmation", message="Email(s) Sent!")
 
 
+def is_night(lat:float, long:float) -> bool:
+    """
+    checks if it is nighttime or not
+    :param lat: latitude
+    :param long: longitude
+    :return: True if it is night, False otherwise
+    """
+    sunset_hour, sunset_minute, sunrise_hour, sunrise_minute = get_sunset_and_sunrise_time_utc(lat, long)
+    current_hour, current_minute = get_current_time_utc()
+
+    if ((((current_hour == sunset_hour and current_minute >= sunset_minute) or (current_hour > sunset_hour)) and
+         ((current_hour == sunrise_hour) and current_minute < sunrise_minute) or current_hour < sunrise_minute)):
+        return True
+    else:
+        return False
+
+def is_iss_near(lat:float, long:float) -> bool:
+    """
+    checks if the iss is near your location
+    :param lat: latitude
+    :param long: longitude
+    :return: True if the ISS is near, false otherwise
+    """
+
+    response = requests.get("http://api.open-notify.org/iss-now.json")
+    response.raise_for_status()
+    data = response.json()
+    iss_lat = float(data["iss_position"]["latitude"])
+    iss_long = float(data["iss_position"]["longitude"])
+
+    if (lat - 5 <= iss_lat <= lat + 5) and (long - 5 <= iss_long <= long + 5):
+        return True
+    else:
+        return False
+
+
 def main() -> None:
     """
     sends user an email if the ISS is overhead at nighttime
@@ -108,12 +124,7 @@ def main() -> None:
         CreateAccount()
         from_name, from_email, from_pass, lat, long = get_user_data()
 
-    sunset_hour, sunset_minute, sunrise_hour, sunrise_minute = get_sunset_and_sunrise_time_utc(lat, long)
-    current_hour, current_minute = get_current_time_utc()
-
-    if ((((current_hour == sunset_hour and current_minute >= sunset_minute) or (current_hour > sunset_hour)) and
-            ((current_hour == sunrise_hour) and current_minute < sunrise_minute) or current_hour < sunrise_minute) and
-            (is_iss_near(lat, long))):
+    if is_night(lat, long) and is_iss_near(lat, long):
         send_email(from_name, from_email, from_pass)
         print("email sent")
     else:
