@@ -1,5 +1,6 @@
 import requests
 import json
+import time
 import smtplib as smtp
 from create_account import CreateAccount
 from datetime import datetime, timezone
@@ -124,11 +125,17 @@ def main() -> None:
         CreateAccount()
         from_name, from_email, from_pass, lat, long = get_user_data()
 
-    if is_night(lat, long) and is_iss_near(lat, long):
-        send_email(from_name, from_email, from_pass)
-        print("email sent")
-    else:
-        print("criteria was not matched")
+    while True:
+        if is_night(lat, long):
+            if is_iss_near(lat, long):
+                send_email(from_name, from_email, from_pass)
+                print("email sent")
+            else:
+                print("The ISS is not near enough yet")
+        else:
+            print("It is not nighttime yet")
+
+        time.sleep(60)
 
 
 if __name__ == "__main__":
