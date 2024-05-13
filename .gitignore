@@ -182,6 +182,7 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 new_git.bat
+data/user_account.json
 
 # idea folder, uncomment if you don't need it
 # .idea
